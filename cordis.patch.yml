@@ -1,0 +1,7 @@
+# folder-tree-sh bundle patch: inserts the workspace file-tree panel row.
+# Applied as a profile bundle layer (package.json dsh.bundle.patch manifest);
+# install with:
+#   dsh plugin --profile web add github:Nothree-code/folder-tree-sh
+- insert:
+    - id: folder-tree-sh
+      name: 'folder-tree-sh'
