@@ -1,0 +1,29 @@
+{
+  "name": "folder-tree-sh",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Persistent workspace file tree for DSH Web: explorer + preview (text/docx/image/PDF/Markdown/CSV), multi-tab, inline editing, Git changes panel, file operations (rename/delete/copy/move/create), search filter, sorting",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "default": "./lib/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "license": "MIT",
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "inject": []
+    }
+  },
+  "dependencies": {
+    "iconv-lite": "^0.6.3",
+    "mammoth": "^1.11.0",
+    "react": "^18.2.0"
+  }
+}
