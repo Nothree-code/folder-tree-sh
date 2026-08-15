@@ -72,6 +72,20 @@
 - **docx 预览失败**：需系统 PowerShell 5.1+ 可用（`powershell.exe` 在 PATH 中）。
 - **右键"打开源文件夹"无效**：插件需以完整权限运行 shell；若你的 DSH 配置了受限沙箱策略，可能被拦截。
 
+## 稳定使用指南（重要）
+
+插件由**宿主半部分**（`lib/index.js`，运行在 dsh web 进程里）和**浏览器半部分**（`lib/client.js`）组成，两侧必须匹配：
+
+| 改了哪侧 | 怎么生效 |
+|---|---|
+| 只改 `client.js` | 浏览器 **Ctrl+F5 强制刷新** 即可 |
+| 改了 `index.js`（或任何 host 代码） | **完全重启 dsh web**（不是刷新） |
+
+- **版本自检**：插件每次启动会比对宿主版本，检测到"页面还停留在旧版本"时，会在界面弹出「插件已更新，请按 Ctrl+F5 刷新」提示 —— 看到提示照做即可，不要以为是插件坏了。
+- **改代码后两处必须同步**：`packages\folder-tree-sh\`（源）与 `node_modules\folder-tree-sh\`（实体拷贝）—— 用包内的 `sync.ps1` 一键同步。
+- **遇到异常先做的三件事**：① `Ctrl+F5` 刷新 → ② 若还不行重启 dsh web → ③ 还不行看浏览器 F12 控制台的红色报错并反馈。
+- **开发者验证**：仓库内 `tools\smoke.mjs` 会真实调用全部 6 个路由（文件系统 + PowerShell + docx/PDF 真实文件），改完 host 后跑一遍 `node tools/smoke.mjs`，14 项全 PASS 再发布。
+
 ## 维护提示
 
 安装后 `node_modules\folder-tree-sh` 是**实体目录拷贝**（非软链接）。修改 `packages\folder-tree-sh\` 下的文件后，可执行包内的 `sync.ps1` 一键同步（或手动复制），再重启 `dsh web` 生效。
