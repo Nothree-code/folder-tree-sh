@@ -39,7 +39,7 @@ git -C $repo commit -m $msg
 if ($LASTEXITCODE -ne 0) { Write-Host '提交失败' -ForegroundColor Red; exit 1 }
 
 Write-Host "正在推送到 GitHub..." -ForegroundColor Cyan
-git -C $repo push
+git -C $repo push -u origin main
 if ($LASTEXITCODE -ne 0) { Write-Host '推送失败（首次使用会弹出 GitHub 登录窗口）' -ForegroundColor Red; exit 1 }
 
 Write-Host "已推送到 https://github.com/Nothree-code/folder-tree-sh （提交: $msg）" -ForegroundColor Green
