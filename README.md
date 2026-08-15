@@ -1,5 +1,10 @@
 # folder-tree-sh — DSH Web 工作区文件树插件
 
+![License](https://img.shields.io/badge/license-MIT-blue)
+![Platform](https://img.shields.io/badge/platform-Windows-0078d6)
+![Version](https://img.shields.io/badge/version-0.1.0-green)
+![For DSH](https://img.shields.io/badge/for-DSH%20web-7c3aed)
+
 > **folder-tree-sh** is a browser plugin for the DeepSeek Harness (DSH) web interface. It adds a workspace file-tree panel beside the sidebar with:
 >
 > - **Preview** — text with automatic GBK fallback for legacy Chinese encodings; DOCX rendered with full layout (headings, tables, inline images via mammoth); Markdown with rendered preview plus inline editing, debounced autosave and 3 rolling `.dshbak` backups; syntax-highlighted code (18 languages); CSV shown as tables; images with Ctrl+wheel zoom; and PDF.
