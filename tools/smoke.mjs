@@ -32,11 +32,13 @@ const fakeCtx = { get(n) { if (n === 'webServer') return { register: (r) => { ro
 mod.apply(fakeCtx);
 
 const mkRes = () => { const out = { status: 0, body: '', headers: {} }; out.writeHead = (c, h) => { out.status = c; out.headers = h || {}; }; out.end = (b) => { out.body = b; }; return out; };
-const get = async (p, qs) => { const res = mkRes(); await routes[p].handler({ url: p + '?' + qs }, res); return JSON.parse(res.body); };
+const get = async (p, qs) => { const res = mkRes(); await routes[p].handler({ url: p + '?' + qs, headers: { 'sec-fetch-site': 'same-origin' } }, res); return JSON.parse(res.body); };
 const post = async (p, qs, obj) => {
   const listeners = {};
-  const req = { url: p + '?' + qs, on: (ev, fn) => { (listeners[ev] = listeners[ev] || []).push(fn); return req; }, destroy: () => {} };
-  queueMicrotask(() => { (listeners.data || []).forEach((fn) => fn(Buffer.from(JSON.stringify(obj)))); (listeners.end || []).forEach((fn) => fn()); });
+  const req = { url: p + '?' + qs, method: 'POST', headers: { 'sec-fetch-site': 'same-origin' }, on: (ev, fn) => { (listeners[ev] = listeners[ev] || []).push(fn); return req; }, destroy: () => {} };
+  // Deliver the body asynchronously AFTER the handler subscribes (the handler
+  // may await before readBody(), so microtasks would fire too early).
+  setTimeout(() => { (listeners.data || []).forEach((fn) => fn(Buffer.from(JSON.stringify(obj)))); (listeners.end || []).forEach((fn) => fn()); }, 10);
   const res = mkRes();
   await routes[p].handler(req, res);
   return JSON.parse(res.body);
