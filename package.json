@@ -1,6 +1,6 @@
 {
   "name": "folder-tree-sh",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "private": true,
   "description": "Persistent workspace file tree: explorer panel, preview (text/docx/image/PDF), context menu operations",
   "type": "module",

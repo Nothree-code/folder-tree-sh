@@ -2,7 +2,7 @@
 
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Platform](https://img.shields.io/badge/platform-Windows-0078d6)
-![Version](https://img.shields.io/badge/version-0.1.0-green)
+![Version](https://img.shields.io/badge/version-0.1.2-green)
 ![For DSH](https://img.shields.io/badge/for-DSH%20web-7c3aed)
 
 > **folder-tree-sh** is a browser plugin for the DeepSeek Harness (DSH) web interface. It adds a workspace file-tree panel beside the sidebar with:
@@ -95,3 +95,13 @@
 - 仅支持 Windows（macOS/Linux 需改写 host 端的 PowerShell 命令）
 - 文件预览上限 100MB；"添加到聊天"仅支持图片且 ≤4MB（DSH 草稿框限制）
 - 插件包名为 `folder-tree-sh`，可自行修改 package.json 中的 name 后使用（同步修改 cordis.patch.yml 的 name 字段）
+
+## 安全加固（v0.1.2）
+
+本版本根据三模型安全评估修订，重点修复攻击面：
+
+- **破坏性操作改 POST + anti-CSRF token**：`delete/rename/paste/open` 从 GET 改为 POST，必须携带 `/dsh-ftree-token` 下发的每进程令牌（`write` 同样校验），彻底封堵跨站 `<img>` 触发的 GET CSRF。
+- **Origin/Sec-Fetch-Site 守卫**：全部 6 个路由拒绝 `Sec-Fetch-Site: cross-site` 与外来 `Origin`。
+- **工作区路径白名单**：所有读/写/操作/预览路径必须位于已注册工作区根目录内（`workspaceRegistry`，回退 `sandboxPolicy.workspaceRoot`），越界一律拒绝。
+- **缓存修复**：预览缓存由单槽改为按路径 Map（上限 64 项），消除并发交错读取不同文件时的数据错乱风险。
+- 升级方式：`pnpm add "file:./packages/folder-tree-sh"` 后**完全重启 dsh web**（改了 host 代码）。

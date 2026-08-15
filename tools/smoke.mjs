@@ -28,7 +28,7 @@ const fakeShell = {
     return { exitCode: 0, stdout: { text: out }, stderr: { text: '' } };
   }
 };
-const fakeCtx = { get(n) { if (n === 'webServer') return { register: (r) => { routes[r.path] = r; return () => { delete routes[r.path]; }; } }; if (n === 'fs') return fakeFs; if (n === 'shell') return fakeShell; return undefined; } };
+const fakeCtx = { get(n) { if (n === 'webServer') return { register: (r) => { routes[r.path] = r; return () => { delete routes[r.path]; }; } }; if (n === 'fs') return fakeFs; if (n === 'shell') return fakeShell; if (n === 'workspaceRegistry') return { list: async () => [ { path: os.tmpdir(), workspaceId: 'smoke-tmp', title: 'tmp', sessionIds: [], createdAt: '', updatedAt: '' }, { path: 'D:\\0_JY_data\\000-博士后', workspaceId: 'smoke-fixtures', title: 'fixtures', sessionIds: [], createdAt: '', updatedAt: '' } ] }; return undefined; } };
 mod.apply(fakeCtx);
 
 const mkRes = () => { const out = { status: 0, body: '', headers: {} }; out.writeHead = (c, h) => { out.status = c; out.headers = h || {}; }; out.end = (b) => { out.body = b; }; return out; };
@@ -47,7 +47,9 @@ let pass = 0, fail = 0;
 const ok = (name, cond, extra) => { if (cond) { pass += 1; console.log('  PASS  ' + name); } else { fail += 1; console.log('  FAIL  ' + name + (extra ? '  → ' + extra : '')); } };
 
 console.log('routes:', Object.keys(routes).join(', '));
-ok('meta', (await get('/dsh-ftree-meta', '')).version === '0.1.1', 'version mismatch');
+ok('meta', (await get('/dsh-ftree-meta', '')).version === '0.1.2', 'version mismatch');
+const tok = (await get('/dsh-ftree-token', '')).token;
+ok('token issued', typeof tok === 'string' && tok.length > 0, 'no anti-CSRF token');
 
 // list
 const dir = TMP;
@@ -63,7 +65,7 @@ ok('read text', rd.ok === true && rd.text === 'hello', JSON.stringify(rd.error))
 // write + backup rotation (initial file + 3 saves → bak1..3)
 fs.writeFileSync(path.join(dir, 'note.md'), '# init');
 for (let i = 1; i <= 3; i++) {
-  const w = await post('/dsh-ftree-write', 'path=' + E(path.join(dir, 'note.md')), { content: '# v' + i });
+  const w = await post('/dsh-ftree-write', 'path=' + E(path.join(dir, 'note.md')), { content: '# v' + i, token: tok });
   if (w.ok !== true) { ok('write #' + i, false, JSON.stringify(w.error)); break; }
   if (i === 3) ok('write', true, '');
 }
@@ -74,19 +76,19 @@ ok('backup .3 exists', fs.existsSync(path.join(dir, 'note.md.dshbak.3')), 'no ba
 // rename conflict → copy name
 fs.writeFileSync(path.join(dir, 'r1.txt'), 'x');
 fs.writeFileSync(path.join(dir, 'target.txt'), 'y');
-const rn = await get('/dsh-ftree-op', 'op=rename&path=' + E(path.join(dir, 'r1.txt')) + '&newName=' + E('target.txt'));
+const rn = await post('/dsh-ftree-op', '', { token: tok, op: 'rename', path: path.join(dir, 'r1.txt'), newName: 'target.txt' });
 ok('rename conflict', rn.ok === true && rn.conflict === true && fs.existsSync(path.join(dir, 'target (副本).txt')), JSON.stringify(rn.error));
 
 // delete → recycle bin
 fs.writeFileSync(path.join(dir, 'del.txt'), 'x');
-const del = await get('/dsh-ftree-op', 'op=delete&path=' + E(path.join(dir, 'del.txt')));
+const del = await post('/dsh-ftree-op', '', { token: tok, op: 'delete', path: path.join(dir, 'del.txt') });
 ok('delete to recycle bin', del.ok === true && del.recycle === true && !fs.existsSync(path.join(dir, 'del.txt')), JSON.stringify(del.error));
 
 // paste conflict
 fs.mkdirSync(path.join(dir, 'dst'), { recursive: true });
 fs.writeFileSync(path.join(dir, 'p1.txt'), 'p');
 fs.writeFileSync(path.join(dir, 'dst', 'p1.txt'), 'q');
-const paste = await get('/dsh-ftree-op', 'op=paste&mode=copy&srcPath=' + E(path.join(dir, 'p1.txt')) + '&destDir=' + E(path.join(dir, 'dst')));
+const paste = await post('/dsh-ftree-op', '', { token: tok, op: 'paste', mode: 'copy', srcPath: path.join(dir, 'p1.txt'), destDir: path.join(dir, 'dst') });
 ok('paste conflict copy', paste.ok === true && fs.existsSync(path.join(dir, 'dst', 'p1 (副本).txt')), JSON.stringify(paste.error));
 
 // gbk fallback
