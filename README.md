@@ -38,6 +38,7 @@ DSH Web GUI 的工作区文件树插件（`dsh-ftree`）：文件浏览、多格
 - **工作区白名单**：所有路径必须位于已注册 workspace 根（deny by default）
 - **删除进回收站**，不永久删除；**写入前滚动备份** `.dshbak.1~3`
 - **Shell 注入防护**：所有 PowerShell 命令经单引号转义（`'` → `''`）
+- **realpath 路径守卫**（`lib/pathguard.js`）：所有路径经 `realpath` 规范化（跟随符号链接与 NTFS junction）后再做工作区前缀校验，`..` 穿越、junction 与 symlink 逃逸均无法绕过白名单；不存在的写入目标自动回溯最近存在祖先（realpathLenient）
 - **预览缓存**：按文件 size 校验自动失效，写入后主动清除
 
 ## 开发

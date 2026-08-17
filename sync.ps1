@@ -11,7 +11,7 @@ if (-not (Test-Path $dst)) {
     exit 1
 }
 
-$files = @('package.json', 'lib\index.js', 'lib\client.js')
+$files = @('package.json', 'cordis.patch.yml', 'lib\index.js', 'lib\client.js')
 foreach ($f in $files) {
     $src = Join-Path $here $f
     if (-not (Test-Path $src)) { Write-Host "源缺失: $src" -ForegroundColor Red; continue }

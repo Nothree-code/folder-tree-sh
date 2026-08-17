@@ -1,6 +1,6 @@
 {
   "name": "folder-tree-sh",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Persistent workspace file tree for DSH Web: explorer + preview (text/docx/image/PDF/Markdown/CSV), multi-tab, inline editing, Git changes panel, file operations (rename/delete/copy/move/create), search filter, sorting",
   "type": "module",
